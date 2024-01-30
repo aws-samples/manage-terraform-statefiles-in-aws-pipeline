@@ -116,27 +116,29 @@ resource "aws_codebuild_project" "codebuild_project_apply" {
 
 #### Lambda
 
-data "archive_file" "lambda_archive_file" {
-  type        = "zip"
-  source_dir  = "${path.module}/lambda/"
-  output_path = "${path.module}/lambda/main.zip"
-}
+# Commented for the first run, uncomment it in your second run when you prepare your application
 
-resource "aws_lambda_function" "lambda" {
-  #checkov:skip=CKV_AWS_50: X-ray tracing not required
-  #checkov:skip=CKV_AWS_115: This lambda function doesnt need function-level concurrent execution limit
-  #checkov:skip=CKV_AWS_117: This lambda function doesnt need to access any resources within VPC
-  #checkov:skip=CKV_AWS_116: Dead Letter Queue(DLQ) not required for this lambda
-  #checkov:skip=CKV_AWS_173: Lambda stores environment variables securely by encrypting them at rest
-  #checkov:skip=CKV_AWS_272: code-signing not needed
-  description      = "Sample Lambda function"
-  filename         = join("", data.archive_file.lambda_archive_file.*.output_path)
-  function_name    = "tf-codebuild"
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "main.lambda_handler"
-  source_code_hash = join("", data.archive_file.lambda_archive_file.*.output_base64sha256)
-  runtime          = "python3.9"
-}
+# data "archive_file" "lambda_archive_file" {
+#   type        = "zip"
+#   source_dir  = "${path.module}/lambda/"
+#   output_path = "${path.module}/lambda/main.zip"
+# }
+
+# resource "aws_lambda_function" "lambda" {
+#   #checkov:skip=CKV_AWS_50: X-ray tracing not required
+#   #checkov:skip=CKV_AWS_115: This lambda function doesnt need function-level concurrent execution limit
+#   #checkov:skip=CKV_AWS_117: This lambda function doesnt need to access any resources within VPC
+#   #checkov:skip=CKV_AWS_116: Dead Letter Queue(DLQ) not required for this lambda
+#   #checkov:skip=CKV_AWS_173: Lambda stores environment variables securely by encrypting them at rest
+#   #checkov:skip=CKV_AWS_272: code-signing not needed
+#   description      = "Sample Lambda function"
+#   filename         = join("", data.archive_file.lambda_archive_file.*.output_path)
+#   function_name    = "tf-codebuild"
+#   role             = aws_iam_role.lambda_role.arn
+#   handler          = "main.lambda_handler"
+#   source_code_hash = join("", data.archive_file.lambda_archive_file.*.output_base64sha256)
+#   runtime          = "python3.9"
+# }
 
 #### DynamoDB
 
