@@ -8,7 +8,7 @@ variable "codecommit_repository_url" {
   default = "https://git-codecommit.eu-central-1.amazonaws.com/v1/repos/codebuild-terraform"
 }
 
-variable "s3_bucket_name" {
+variable "s3_bucket_prefix" {
   type    = string
   default = "tfbackend-bucket"
 }
