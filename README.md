@@ -4,7 +4,7 @@ This repo was created as part of the blog - "Best practices for managing Terrafo
 
 ## Prerequisites
 
-- Terraform v1.11.0 or later (required for S3 native state locking with `use_lockfile`)
+- Terraform v1.10 or later (required for S3 native state locking with `use_lockfile`)
 
 ## Best Practices for handling state files
 
@@ -16,13 +16,13 @@ You can configure terraform to store state files in an Amazon S3 bucket which pr
 State locking with S3 native locking:
 By setting `use_lockfile = true` in the S3 backend configuration, Terraform creates a `.tflock` lock file in the same S3 bucket to prevent concurrent modifications to the state file. This eliminates the need for a separate DynamoDB table and simplifies your infrastructure.
 
-> **Note:** `use_lockfile` requires Terraform v1.11.0 or later.
+> **Note:** `use_lockfile` requires Terraform v1.10 or later.
 
 When deploying terraform on AWS, the preferred choice of managing state is using Amazon S3 with S3 native locking (`use_lockfile = true`).
 
 ## AWS configurations for managing state files
 
-> **Important:** Before deploying, update the S3 bucket name in both `variable.tf` (`s3_bucket_name`) and `backend.tf` (`bucket`) to a globally unique name for your environment. These two values must refer to the same bucket.
+> **Important:** Before deploying, update the S3 bucket name in both `variable.tf` (`s3_bucket_prefix`) and `backend.tf` (`bucket`) to a globally unique name for your environment. These two values must refer to the same bucket.
 
 1. Create an Amazon S3 bucket using terraform. Implement security measures for Amazon S3 bucket by creating an AWS Identity and Access Management (AWS IAM) policy or Amazon S3 Bucket Policy for restricting access, configuring object versioning for data protection and recovery, and enabling AES256 encryption with SSE-KMS for encryption control.
 
@@ -34,10 +34,10 @@ This repo will explain how you can manage terraform state files efficiently in y
 
 ## Migrating from DynamoDB state locking
 
-If you are currently using DynamoDB-based state locking (`dynamodb_table`), note that this mechanism is deprecated as of Terraform v1.11.0 and will be removed in a future minor version. The [HashiCorp S3 Backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3) recommends the following migration path:
+If you are currently using DynamoDB-based state locking (`dynamodb_table`), note that this mechanism is deprecated as of Terraform v1.10 and will be removed in a future minor version. The [HashiCorp S3 Backend documentation](https://developer.hashicorp.com/terraform/language/backend/s3) recommends the following migration path:
 
 1. **Dual locking:** Add `use_lockfile = true` while keeping the existing `dynamodb_table` argument. Terraform will acquire locks from both S3 and DynamoDB before proceeding with any operation.
 2. **Verify:** Run `plan` and `apply` several times to confirm S3 native locking is working correctly.
 3. **Remove DynamoDB configuration:** Once verified, remove the `dynamodb_table` argument to complete the migration and eliminate the deprecation warning. The DynamoDB table and its associated IAM permissions can then be removed.
 
-> **Note:** If your team has mixed Terraform versions, remain in the dual locking state until everyone has upgraded to v1.11.0 or later. S3 native locking relies on conditional writes (`If-None-Match` header), which may not be supported by all S3-compatible storage providers.
+> **Note:** If your team has mixed Terraform versions, remain in the dual locking state until everyone has upgraded to v1.10 or later. S3 native locking relies on conditional writes (`If-None-Match` header), which may not be supported by all S3-compatible storage providers.

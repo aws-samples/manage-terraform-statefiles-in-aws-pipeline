@@ -1,4 +1,10 @@
 #### S3
+data "aws_caller_identity" "current" {}
+
+locals {
+  state_bucket_name = "${var.s3_bucket_prefix}-${data.aws_caller_identity.current.account_id}-${var.aws_region}-an"
+}
+
 
 resource "aws_s3_bucket" "s3_bucket_backend" {
   #checkov:skip=CKV_AWS_145: Lifecycle configuration not required for TF state bucket
@@ -8,9 +14,9 @@ resource "aws_s3_bucket" "s3_bucket_backend" {
   #checkov:skip=CKV_AWS_145: No KMS encryption needed for TF state bucket
   #checkov:skip=CKV_AWS_21: No versioning needed for TF state bucket
   #checkov:skip=CKV_AWS_18: No logging needed for TF state bucket
-  bucket = var.s3_bucket_name
+  bucket = local.state_bucket_name
+  bucket_namespace = "account-regional"
 }
-
 resource "aws_s3_bucket_acl" "s3_bucket_backend_acl" {
   depends_on = [aws_s3_bucket_ownership_controls.s3_bucket_acl_ownership]
   bucket     = aws_s3_bucket.s3_bucket_backend.id
