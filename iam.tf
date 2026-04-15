@@ -6,34 +6,31 @@ data "aws_iam_policy_document" "codebuild_policy_document" {
     resources = ["arn:aws:logs:*:*:*"]
     effect    = "Allow"
   }
+  # Get a list of S3 buckets
   statement {
-    actions = [
-      "s3:List*",
-      "s3:Get*",
-      "s3:Put*",
-      "s3:DeleteObject",
-      "s3:DeleteObjectVersion"
-    ]
+    effect  = "Allow"
+    actions = ["s3:ListBucket"]
     resources = [
-      "${aws_s3_bucket.s3_bucket_backend.arn}/*",
-      "${aws_s3_bucket.s3_bucket_backend.arn}"
+      aws_s3_bucket.s3_bucket_backend.arn
     ]
-    effect = "Allow"
   }
+
+  # Write/read state file (No DeleteObject permission)
   statement {
-    effect = "Allow"
-    actions = [
-      "dynamodb:BatchGetItem",
-      "dynamodb:Query",
-      "dynamodb:PutItem",
-      "dynamodb:UpdateItem",
-      "dynamodb:DeleteItem",
-      "dynamodb:BatchWriteItem",
-      "dynamodb:Describe*",
-      "dynamodb:Get*",
-      "dynamodb:List*"
+    effect  = "Allow"
+    actions = ["s3:GetObject", "s3:PutObject"]
+    resources = [
+      "${aws_s3_bucket.s3_bucket_backend.arn}/terraform.tfstate"
     ]
-    resources = ["${aws_dynamodb_table.dynamodb_tfstate_lock.arn}"]
+  }
+
+  # write/read/delete lock file
+  statement {
+    effect  = "Allow"
+    actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
+    resources = [
+      "${aws_s3_bucket.s3_bucket_backend.arn}/terraform.tfstate.tflock"
+    ]
   }
 }
 
